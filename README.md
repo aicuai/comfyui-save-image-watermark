@@ -128,6 +128,7 @@ Apache License 2.0
 
 ## 関連プロジェクト
 
+- [ComfyUI Master Guide](https://j.aicu.ai/comfysb)
 - [comfyui-save-image-local](https://github.com/yhayano-ponotech/comfyui-save-image-local) - オリジナルの保存ノード
 - [C2PA](https://c2pa.org/) - Content Credentials標準
 
@@ -137,6 +138,6 @@ Issue、Pull Requestを歓迎します。
 
 ## 作者
 
-AICU Japan Inc.
+AICU Japan K. K.
 - Web: https://aicu.jp
 - GitHub: https://github.com/aicuai

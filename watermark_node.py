@@ -59,8 +59,8 @@ class LocalSaveImageWithWatermark:
                 # テキスト透かし
                 "watermark_text": ("STRING", {"default": "© AICU"}),
                 "watermark_enabled": ("BOOLEAN", {"default": True}),
-                "watermark_position": (cls.POSITION_OPTIONS, {"default": "bottom_right"}),
-                "watermark_opacity": ("FLOAT", {"default": 0.3, "min": 0.0, "max": 1.0, "step": 0.05}),
+                "watermark_position": (cls.POSITION_OPTIONS, {"default": "bottom_left"}),
+                "watermark_opacity": ("FLOAT", {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05}),
                 "watermark_font_size": ("INT", {"default": 24, "min": 8, "max": 128, "step": 1}),
                 "watermark_color": ("STRING", {"default": "#FFFFFF"}),
                 
