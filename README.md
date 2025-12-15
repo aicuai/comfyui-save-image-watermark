@@ -1,21 +1,32 @@
 # ComfyUI Save Image with Watermark 💧
 
-透かし（ウォーターマーク）機能付き画像保存カスタムノード
+透かし（ウォーターマーク）機能付き画像保存カスタムノード for ComfyUI
 
 ## 機能
 
-### 可視透かし
-- **テキスト透かし**: カスタムテキスト、フォントサイズ、色、透明度、位置を指定可能
-- **画像透かし**: ロゴ画像をオーバーレイ
-- **タイル透かし**: 画像全体に繰り返しパターンで配置
+### 画像ロゴ透かし
+- **MASK対応**: LoadImageのMASK出力を使用した正確なアルファブレンディング
+- **透明PNG対応**: 黒浮き・白浮きなしの合成
+- **位置・スケール・透明度**: 細かく調整可能
+
+### テキスト透かし
+- **カスタムテキスト**: フォントサイズ、色、透明度、位置を指定可能
+- **動的テキスト**: 外部ノードからseed等を埋め込み可能
+- **タイル配置**: 画像全体に繰り返しパターンで配置
 
 ### 不可視透かし（ステガノグラフィ）
 - **LSB埋め込み**: 画像の最下位ビットに隠しメッセージを埋め込み
 - **抽出ノード**: 埋め込まれた隠しメッセージを抽出
 
 ### メタデータ・来歴
+- **ワークフロー埋め込み**: ComfyUI Core互換のワークフロー保存
 - **コンテンツハッシュ**: SHA-256ハッシュを生成（ブロックチェーン来歴記録用）
-- **メタデータ埋め込み**: PNG Infoにカスタムメタデータを保存
+- **AICU独自メタデータ**: 透かし情報、タイムスタンプ等
+
+### 保存オプション
+- **output_folder**: ComfyUIのoutputフォルダに保存
+- **browser_download**: ブラウザでダウンロード
+- **both**: 両方（デフォルト）
 
 ## インストール
 
@@ -31,37 +42,81 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 ```
 
-## 使い方
+## ノード一覧
 
 ### Save Image (Watermark) 💧
+カテゴリ: `AICU/Save`
 
-1. ノードブラウザで "Save Image (Watermark)" を検索
-2. 画像生成ノードの出力を接続
-3. パラメータを設定:
-   - `prefix`: ファイル名プレフィックス
-   - `file_format`: PNG/JPEG/WEBP
-   - `watermark_text`: 透かしテキスト（例: "© AICU"）
-   - `watermark_position`: 位置（bottom_right, center, tile等）
-   - `watermark_opacity`: 透明度（0.0〜1.0）
-   - `invisible_watermark`: 隠しメッセージ（オプション）
+透かし付きで画像を保存するメインノード。
 
 ### Extract Hidden Watermark 🔍
+カテゴリ: `AICU/Watermark`
 
-1. "Extract Hidden Watermark"ノードを追加
-2. 透かし付き画像を入力
-3. 隠しメッセージが出力される
+不可視透かし（ステガノグラフィ）を抽出するノード。
 
-## パラメータ詳細
+## 処理順序
+
+```
+1. 画像ロゴ透かし（最下層）
+   └─ MASK領域のみopacityでブレンド
+
+2. テキスト透かし（ロゴの上）
+   └─ 動的テキストと結合
+
+3. 不可視透かし（最後）
+   └─ LSBステガノグラフィ
+
+4. ファイル保存
+```
+
+## パラメータ
+
+### 基本設定
+| パラメータ | 説明 | デフォルト |
+|-----------|------|-----------|
+| images | 入力画像 (IMAGE) | 必須 |
+| filename_prefix | ファイル名プレフィックス | "aicuty" |
+| file_format | PNG / JPEG / WEBP | PNG |
+| save_to | output_folder / browser_download / both | both |
+
+### 画像ロゴ透かし
+| パラメータ | 説明 | デフォルト |
+|-----------|------|-----------|
+| watermark_image | ロゴ画像 (IMAGE) | - |
+| watermark_image_mask | アルファマスク (MASK) | - |
+| watermark_image_position | 位置 | bottom_left |
+| watermark_image_scale | スケール (0.01-1.0) | 0.15 |
+| watermark_image_opacity | 透明度 (0.0-1.0) | 1.0 |
 
 ### テキスト透かし
 | パラメータ | 説明 | デフォルト |
 |-----------|------|-----------|
 | watermark_text | 透かしテキスト | "© AICU" |
-| watermark_enabled | 有効/無効 | True |
-| watermark_position | 位置 | bottom_right |
-| watermark_opacity | 透明度 | 0.3 |
-| watermark_font_size | フォントサイズ | 24 |
-| watermark_color | 色（16進数） | #FFFFFF |
+| watermark_text_enabled | 有効/無効 | True |
+| watermark_text_position | 位置 | bottom_right |
+| watermark_text_opacity | 透明度 | 0.9 |
+| watermark_text_size | フォントサイズ | 24 |
+| watermark_text_color | 色（HEX） | #FFFFFF |
+| dynamic_text | 動的テキスト入力 | - |
+
+### 不可視透かし
+| パラメータ | 説明 | デフォルト |
+|-----------|------|-----------|
+| invisible_watermark | 隠しメッセージ | "" |
+| invisible_watermark_enabled | 有効/無効 | False |
+
+### メタデータ
+| パラメータ | 説明 | デフォルト |
+|-----------|------|-----------|
+| embed_workflow | ワークフロー埋め込み | True |
+| embed_metadata | AICU メタデータ埋め込み | True |
+| metadata_json | カスタムJSON | "{}" |
+
+### 品質設定
+| パラメータ | 説明 | デフォルト |
+|-----------|------|-----------|
+| jpeg_quality | JPEG品質 | 95 |
+| webp_quality | WebP品質 | 90 |
 
 ### 位置オプション
 - `bottom_right`: 右下
@@ -71,56 +126,129 @@ git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 - `center`: 中央
 - `tile`: タイル状に繰り返し
 
-### 不可視透かし
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| invisible_watermark | 隠しメッセージ | "" |
-| invisible_watermark_enabled | 有効/無効 | False |
+## 使用例
 
-### 品質設定
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| jpeg_quality | JPEG品質 | 95 |
-| webp_quality | WebP品質 | 90 |
+### 基本的な使い方
+```
+[VAEDecode] → [Save Image (Watermark) 💧]
+                    ↑
+[LoadImage] → IMAGE + MASK
+```
+
+### 画像ロゴ + テキストの配置
+```
+LoadImage (ロゴ)
+    ├─ IMAGE → watermark_image
+    └─ MASK  → watermark_image_mask
+
+設定:
+- watermark_image_position: bottom_left (ロゴは左下)
+- watermark_text_position: bottom_right (テキストは右下)
+```
+
+### 動的テキスト（seed表示）
+```
+[String] "/seed: 12345" → dynamic_text
+
+結果: "© AICU/seed: 12345"
+```
+※ watermark_text と dynamic_text は区切り文字なしで連結されます
+
+### 不可視透かしの埋め込みと抽出
+```
+埋め込み:
+invisible_watermark = "secret message"
+invisible_watermark_enabled = True
+
+抽出:
+[LoadImage] → [Extract Hidden Watermark 🔍] → hidden_message
+```
 
 ## 出力
 
+- **image**: 処理後の画像 (IMAGE) - 後続ノードへの接続用
 - **filename**: 保存されたファイル名
 - **content_hash**: SHA-256ハッシュ値（来歴記録用）
 
-## ユースケース
-
-### 著作権保護
-```
-watermark_text = "© 2026 AICU Japan"
-watermark_position = "bottom_right"
-watermark_opacity = 0.3
-```
-
-### 来歴記録（ブロックチェーン連携）
-```
-invisible_watermark = "creator:user123|date:2024-12-14|id:abc123"
-invisible_watermark_enabled = True
-embed_metadata = True
-```
-
-### AI生成証明
-```
-watermark_text = "AI Generated by AICU"
-invisible_watermark = '{"model":"mellow_pencil","seed":12345}'
-```
-
 ## 技術仕様
 
+### 画像ロゴブレンディング
+- MASKが0の部分: 完全透明（ブレンドしない）
+- MASKが255の部分: opacity値でブレンド
+- 計算式: `result = base * (1 - mask * opacity) + logo * (mask * opacity)`
+
 ### 不可視透かし（LSB）
-- 各ピクセルのRGB値の最下位ビット（LSB）を使用
-- 終端マーカー: 4つの連続したNULLバイト
-- 最大埋め込み容量: 画像サイズ(bytes) / 8 文字
+
+現在の実装は**シンプルLSB（Least Significant Bit）方式**を採用しています。
+
+#### アルゴリズム
+
+**埋め込み処理:**
+1. メッセージをUTF-8でバイト列に変換
+2. 終端マーカー（4つのNULLバイト `\x00\x00\x00\x00`）を追加
+3. 各バイトを8ビットに分解
+4. 画像の各ピクセルのR, G, B値の最下位ビット（LSB）を順番に書き換え
+5. アルファチャンネル（透明度）は変更しない
+
+**抽出処理:**
+1. 画像の各ピクセルのR, G, B値からLSBを順番に取得
+2. 8ビットずつ集めてバイトに復元
+3. 終端マーカー（4つの連続NULLバイト）を検出したら終了
+4. バイト列をUTF-8でデコードしてメッセージを復元
+
+#### 仕様
+- 最大埋め込み容量: `(width × height × 3) / 8` バイト
+- 終端マーカー: 4バイト（`\x00\x00\x00\x00`）
+- エンコーディング: UTF-8
+
+#### ⚠️ 重要な制限事項
+
+**この方式は画像加工に対して脆弱です。以下の操作でデータが破壊されます:**
+
+| 操作 | 影響 |
+|-----|------|
+| JPEG保存 | ❌ 完全に破壊（非可逆圧縮がLSBを変更） |
+| WebP保存（非可逆） | ❌ 完全に破壊 |
+| リサイズ | ❌ 完全に破壊（ピクセル補間でLSBが変更） |
+| クロップ | ❌ 完全に破壊（ピクセル位置がずれる） |
+| 回転 | ❌ 完全に破壊 |
+| 色調補正 | ❌ 完全に破壊 |
+| PNG再保存 | ✅ 保持される（可逆圧縮のため） |
+
+**推奨事項:**
+- 不可視透かしを使用する場合は**PNG形式のみ**で保存してください
+- 抽出前に画像を加工しないでください
+- 耐久性が必要な場合は、将来実装予定のDCT/DWT方式をお待ちください
+
+#### セキュリティ上の注意
+- 現在の実装には**暗号化機能がありません**
+- 埋め込み位置は**固定パターン**（左上から順番）
+- 第三者が同じアルゴリズムで抽出可能です
+- 機密情報の埋め込みには適しません
 
 ### コンテンツハッシュ
 - アルゴリズム: SHA-256
 - 入力: PNG形式でエンコードされた画像バイト列
 - 出力: 64文字の16進数文字列
+
+## 将来の拡張予定
+
+### テキスト装飾
+- カスタムフォント対応
+- 縁取り（ストローク）
+- ドロップシャドウ
+- テキスト回転
+- 背景ボックス
+
+### 高度なステガノグラフィ
+- DCT (Discrete Cosine Transform) 方式
+- DWT (Discrete Wavelet Transform) 方式
+- 暗号化キーによる位置シャッフル
+- エラー訂正符号
+
+### その他
+- ロゴ回転・ブレンドモード
+- C2PA署名対応
 
 ## ライセンス
 

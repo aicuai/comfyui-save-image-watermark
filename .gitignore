@@ -46,3 +46,5 @@ htmlcov/
 # Distribution
 *.tar.gz
 *.whl
+.DS_Store
+.DS_Store
