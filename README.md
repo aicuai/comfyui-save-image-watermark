@@ -68,17 +68,37 @@ graph TB
 
 ## インストール
 
-### ComfyUI Manager経由
-1. ComfyUI Managerを開く
-2. "Install Custom Nodes"を選択
-3. "comfyui-save-image-watermark"を検索
-4. インストール
+### ComfyUI Manager経由（推奨）
+
+1. ComfyUIを起動
+2. **Manager** ボタンをクリック
+3. **Install Custom Nodes** を選択
+4. 検索ボックスに `watermark` または `aicu` と入力
+5. **comfyui-save-image-watermark** を見つけて **Install** をクリック
+6. ComfyUIを再起動
+
+**★ここにスクリーンショットを入れる（ComfyUI Manager検索画面）**
+
+### Comfy Registry経由
+
+```bash
+comfy node registry-install comfyui-save-image-watermark
+```
 
 ### 手動インストール
+
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 ```
+
+### 依存関係
+
+このノードはComfyUIの標準ライブラリのみを使用するため、追加の依存関係はありません。
+
+- Pillow（ComfyUIに同梱）
+- NumPy（ComfyUIに同梱）
+- PyTorch（ComfyUIに同梱）
 
 ## ノード一覧
 
@@ -96,7 +116,16 @@ git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 
 ## ComfyUIでの使い方
 
+### ノードの追加方法
+
+1. キャンバス上で右クリック → **Add Node**
+2. **AICU** → **Save** → **Save Image (Watermark) 💧** を選択
+
+**★ここにスクリーンショットを入れる（ノード追加メニュー）**
+
 ### ノード配線図
+
+**★ここにスクリーンショットを入れる（実際のワークフロー全体像）**
 
 ```mermaid
 flowchart LR
@@ -129,6 +158,38 @@ flowchart LR
     O1 --> PREVIEW
     O1 --> NEXT
 ```
+
+### 基本的な接続
+
+#### Step 1: 元画像を接続
+
+生成した画像を `images` ピンに接続します。
+
+```
+[KSampler] → [VAEDecode] → images
+```
+
+**★ここにスクリーンショットを入れる（VAEDecode→imagesの接続）**
+
+#### Step 2: ロゴ画像を接続（オプション）
+
+透かしロゴを追加する場合、LoadImageノードから2本のワイヤーを接続します。
+
+```
+[LoadImage]
+    ├─ IMAGE → watermark_image
+    └─ MASK  → watermark_image_mask  ← 重要！透明度情報
+```
+
+> ⚠️ **MASK接続を忘れずに！** MASKを接続しないと透明部分が黒くなります。
+
+**★ここにスクリーンショットを入れる（LoadImageからの2本接続）**
+
+#### Step 3: パラメータを設定
+
+ノードのウィジェットで各種設定を調整します。
+
+**★ここにスクリーンショットを入れる（パラメータ設定画面）**
 
 ### 入力ピン（左側）
 
@@ -251,6 +312,8 @@ tile: 画像全体にタイル状に繰り返し配置
 
 LSBステガノグラフィで埋め込まれたメッセージを抽出するノード。
 
+**★ここにスクリーンショットを入れる（Extract Hidden Watermarkノード）**
+
 #### 入力ピン
 
 | ピン名 | 型 | 説明 |
@@ -274,6 +337,8 @@ LSBステガノグラフィで埋め込まれたメッセージを抽出する�
 ```
 [LoadImage] ──IMAGE──→ [Extract Hidden Watermark 🔍] ──STRING──→ [ShowText]
 ```
+
+**★ここにスクリーンショットを入れる（抽出ワークフロー例）**
 
 ---
 
