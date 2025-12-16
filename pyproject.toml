@@ -1,15 +1,16 @@
 [project]
 name = "comfyui-save-image-watermark"
-description = "ComfyUI custom node for directly downloading generated images to your local PC with customizable filenames and formats (PNG/JPEG)."
-version = "1.0.0"
+description = "Save images with visible watermarks (logo/text), invisible watermarks (LSB steganography), and metadata embedding. Supports PNG/JPEG/WebP with browser download."
+version = "1.1.0"
 license = {file = "LICENSE"}
 dependencies = []
+keywords = ["comfyui", "watermark", "steganography", "lsb", "image", "save"]
 
 [project.urls]
 Repository = "https://github.com/aicuai/comfyui-save-image-watermark"
-#  Used by Comfy Registry https://comfyregistry.org
+# Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
 PublisherId = "kaitas"
-DisplayName = "ComfyUI Local Save Node with watermark"
+DisplayName = "Save Image with Watermark"
 Icon = ""
