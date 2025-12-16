@@ -2,6 +2,44 @@
 
 透かし（ウォーターマーク）機能付き画像保存カスタムノード for ComfyUI
 
+## 🎨 この画像には秘密が隠されています
+
+<img src="examples/aicuty_000011.png" width="400" alt="サンプル画像">
+
+```mermaid
+graph TB
+    subgraph visible["👁️ 見える層"]
+        direction LR
+        V1["🖼️ イラスト本体"]
+        V2["🅰️ ロゴ透かし<br/>(左下)"]
+        V3["📝 テキスト透かし<br/>(右下)"]
+    end
+
+    subgraph invisible["🔒 見えない層 - LSBステガノグラフィ"]
+        direction LR
+        I1["ピクセルRGB値"]
+        I2["最下位ビット<br/>に埋め込み"]
+        I3["🔐 隠しメッセージ"]
+        I1 --> I2 --> I3
+    end
+
+    IMG["📷 PNG画像ファイル"]
+    IMG --> visible
+    IMG --> invisible
+
+    style visible fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style invisible fill:#fff8e1,stroke:#ff8f00,stroke-width:2px
+    style I3 fill:#ffebee,stroke:#e53935
+```
+
+> 💡 **実際に試してみよう！**
+> ```bash
+> cd examples
+> python3 -m venv venv && source venv/bin/activate && pip install Pillow
+> python lsb_demo.py aicuty_000011.png
+> # → "invisible Hello World!" が抽出されます！
+> ```
+
 ## 機能
 
 ### 画像ロゴ透かし
@@ -181,6 +219,51 @@ invisible_watermark_enabled = True
 
 現在の実装は**シンプルLSB（Least Significant Bit）方式**を採用しています。
 
+#### LSBとは？
+
+```mermaid
+graph LR
+    subgraph pixel["1ピクセルの構造"]
+        R["R: 10000000<br/>(128)"]
+        G["G: 10000000<br/>(128)"]
+        B["B: 10000000<br/>(128)"]
+    end
+
+    subgraph lsb["最下位ビット (LSB)"]
+        R --> R_LSB["0"]
+        G --> G_LSB["0"]
+        B --> B_LSB["0"]
+    end
+
+    R_LSB --> MSG["メッセージの<br/>1ビット目"]
+    G_LSB --> MSG2["メッセージの<br/>2ビット目"]
+    B_LSB --> MSG3["メッセージの<br/>3ビット目"]
+
+    style R fill:#ffcdd2
+    style G fill:#c8e6c9
+    style B fill:#bbdefb
+```
+
+```
+例: "H" (ASCII 72 = 01001000) を埋め込む
+
+元のピクセル        埋め込み後          変化
+─────────────────────────────────────────────
+Pixel[0]
+  R: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
+  G: 128 (10000000) → 129 (1000000[1])   LSB=1 ← 変更！
+  B: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
+
+Pixel[1]
+  R: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
+  G: 128 (10000000) → 129 (1000000[1])   LSB=1 ← 変更！
+  ...
+
+128 → 129 の変化は人間の目には見えない！
+```
+
+> 💡 **実際に試す**: `python examples/lsb_demo.py --create-gray`
+
 #### アルゴリズム
 
 **埋め込み処理:**
@@ -230,6 +313,109 @@ invisible_watermark_enabled = True
 - アルゴリズム: SHA-256
 - 入力: PNG形式でエンコードされた画像バイト列
 - 出力: 64文字の16進数文字列
+
+---
+
+## 実験: Photoshopで加工してもLSBは生き残るか？
+
+LSBステガノグラフィは「画像加工に弱い」と言われますが、実際にPhotoshopで編集した場合どうなるのか実験してみました。
+
+### 実験環境
+
+- Adobe Photoshop 2026
+- macOS
+- 元画像: 128x128 グレー画像（LSBに "Hello LSB!" を埋め込み済み）
+
+### 実験手順
+
+1. LSB埋め込み済みの画像をPhotoshopで開く
+2. テキストツールで文字を追加
+3. **「PNGとしてクイック書き出し」** で保存
+
+<img src="examples/screenshot-photoshop.png" width="600" alt="Photoshopでの書き出し手順">
+
+### 結果
+
+```
+【ピクセル分析】
+   最初の変更ピクセル: 行13, 列43（テキスト部分のみ）
+   変更されたピクセル: 9.2%（テキスト領域のみ）
+
+【LSBメッセージ領域】
+   位置: 行0, 列0〜37（最初の38ピクセル）
+   状態: 完全に無傷 ✅
+
+【抽出テスト】
+   元画像:           'Hello LSB!'
+   Photoshop加工後:  'Hello LSB!'
+
+   🎉 復号成功！
+```
+
+### なぜ成功したのか
+
+| 要因 | 説明 |
+|------|------|
+| **書き出し方式** | 「PNGとしてクイック書き出し」は最適化が最小限 |
+| **カラープロファイル** | 変換なし（埋め込みプロファイルを維持） |
+| **加工位置** | テキストが中央、LSBデータは左上 → 重ならない |
+| **ファイル形式** | PNG（可逆圧縮）で保存 |
+
+### 生存条件まとめ
+
+```mermaid
+flowchart TD
+    A[Photoshopで編集] --> B{カラープロファイル変換?}
+    B -->|あり| X[❌ 破壊]
+    B -->|なし| C{保存形式?}
+    C -->|JPEG/WebP| X
+    C -->|PNG| D{加工位置?}
+    D -->|左上を編集| X
+    D -->|中央/右下を編集| E[✅ 生存]
+```
+
+### 破壊されるケース
+
+以下の操作を行うと確実に破壊されます：
+
+- ❌ 「Web用に保存（従来）」→ 最適化でピクセル値が変わる
+- ❌ 「書き出し形式」でJPEG選択
+- ❌ カラープロファイルを変換（sRGB → Adobe RGB など）
+- ❌ 画像サイズを変更（リサイズ）
+- ❌ 左上領域にテキストやスタンプを追加
+
+### 実験用スクリプト
+
+自分で試してみたい場合は、以下のコマンドを実行してください：
+
+```bash
+cd examples
+
+# Python環境のセットアップ
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install Pillow
+
+# グレー画像でLSB実験
+python lsb_demo.py --create-gray
+
+# 生成されたファイル
+# - gray128_128x128.png        (元のグレー画像)
+# - gray128_with_secret.png    (LSB埋め込み済み)
+
+# Photoshopで gray128_with_secret.png を開いて加工し、
+# 別名で保存してから抽出テスト
+python lsb_demo.py your_edited_image.png
+```
+
+### 結論
+
+> LSBステガノグラフィは思ったより丈夫...だが、信頼してはいけない
+
+「PNG再保存なら大丈夫」という単純な話ではなく、**どこを編集したか**が重要です。
+ただし、これはセキュリティ機能ではなく、あくまで**実験的な透かし**として使用してください。
+
+---
 
 ## 将来の拡張予定
 
