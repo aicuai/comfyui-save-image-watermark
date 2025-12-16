@@ -11,6 +11,6 @@ Repository = "https://github.com/aicuai/comfyui-save-image-watermark"
 # Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = "kaitas"
+PublisherId = "DrHakase"
 DisplayName = "Save Image with Watermark"
-Icon = ""
+Icon = "🍉"
