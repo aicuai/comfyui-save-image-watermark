@@ -92,6 +92,191 @@ git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 
 不可視透かし（ステガノグラフィ）を抽出するノード。
 
+---
+
+## ComfyUIでの使い方
+
+### ノード配線図
+
+```mermaid
+flowchart LR
+    subgraph input["入力"]
+        KS[KSampler] --> VAE[VAEDecode]
+        LI[LoadImage<br/>ロゴ画像]
+    end
+
+    subgraph main["Save Image (Watermark) 💧"]
+        direction TB
+        I1[/"images (IMAGE)"/]
+        I2[/"watermark_image (IMAGE)"/]
+        I3[/"watermark_image_mask (MASK)"/]
+        I4[/"dynamic_text (STRING)"/]
+
+        O1[\"image (IMAGE)"\]
+        O2[\"filename (STRING)"\]
+        O3[\"content_hash (STRING)"\]
+    end
+
+    subgraph output["出力"]
+        PREVIEW[PreviewImage]
+        NEXT[次のノード...]
+    end
+
+    VAE -->|IMAGE| I1
+    LI -->|IMAGE| I2
+    LI -->|MASK| I3
+
+    O1 --> PREVIEW
+    O1 --> NEXT
+```
+
+### 入力ピン（左側）
+
+| ピン名 | 型 | 必須 | 説明 |
+|--------|-----|------|------|
+| **images** | IMAGE | ✅ | 透かしを入れる元画像。VAEDecodeの出力を接続 |
+| **watermark_image** | IMAGE | - | ロゴ画像。LoadImageのIMAGE出力を接続 |
+| **watermark_image_mask** | MASK | - | ロゴのアルファ情報。LoadImageのMASK出力を接続 |
+| **dynamic_text** | STRING | - | 動的テキスト。seed値などを接続可能 |
+
+### 出力ピン（右側）
+
+| ピン名 | 型 | 説明 |
+|--------|-----|------|
+| **image** | IMAGE | 透かし処理後の画像。後続ノードに接続可能 |
+| **filename** | STRING | 保存されたファイル名 |
+| **content_hash** | STRING | SHA-256ハッシュ（来歴記録用） |
+
+---
+
+### パラメータ詳細
+
+#### 基本設定
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `filename_prefix` | STRING | "aicuty" | ファイル名の接頭辞。`aicuty_00001_.png` のように連番が付く |
+| `file_format` | ENUM | PNG | 保存形式。**PNG推奨**（LSBが保持される） |
+| `save_to` | ENUM | both | 保存先。`output_folder` / `browser_download` / `both` |
+
+#### 画像ロゴ透かし
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  LoadImage (ロゴ)                                       │
+│  ┌─────────┐                                           │
+│  │ 🖼️ LOGO │──IMAGE──→ watermark_image                 │
+│  │   .png  │──MASK───→ watermark_image_mask            │
+│  └─────────┘           ↑                               │
+│                        │                               │
+│          LoadImageのMASK出力は透明部分=白、不透明=黒    │
+│          ノード内部で自動反転されます                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `watermark_image_position` | ENUM | bottom_left | ロゴの配置位置 |
+| `watermark_image_scale` | FLOAT | 0.15 | 画像幅に対するロゴの比率（1%〜100%） |
+| `watermark_image_opacity` | FLOAT | 1.0 | 不透明度（0.0=透明、1.0=不透明） |
+
+#### テキスト透かし
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `watermark_text` | STRING | "© AICU" | 透かしテキスト |
+| `watermark_text_enabled` | BOOL | True | テキスト透かしの有効/無効 |
+| `watermark_text_position` | ENUM | bottom_right | テキストの配置位置 |
+| `watermark_text_opacity` | FLOAT | 0.9 | 不透明度 |
+| `watermark_text_size` | INT | 24 | フォントサイズ（8〜128px） |
+| `watermark_text_color` | STRING | #FFFFFF | テキスト色（HEX形式） |
+
+**動的テキストの使い方:**
+
+```
+┌──────────────┐
+│ PrimitiveNode│
+│ "/seed: 123" │──STRING──→ dynamic_text
+└──────────────┘
+
+結果: "© AICU/seed: 123"（watermark_textと連結される）
+```
+
+#### 不可視透かし（LSB）
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `invisible_watermark` | STRING | "" | 埋め込む秘密メッセージ |
+| `invisible_watermark_enabled` | BOOL | False | 不可視透かしの有効/無効 |
+
+> ⚠️ **注意**: 不可視透かしは**PNG形式のみ**で保持されます。JPEG/WebPでは破壊されます。
+
+#### メタデータ
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `embed_workflow` | BOOL | True | ComfyUIワークフローを埋め込み |
+| `embed_metadata` | BOOL | True | AICUメタデータを埋め込み |
+| `metadata_json` | STRING | "{}" | カスタムJSONメタデータ |
+
+#### 品質設定
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `jpeg_quality` | INT | 95 | JPEG品質（1〜100） |
+| `webp_quality` | INT | 90 | WebP品質（1〜100） |
+
+---
+
+### 位置オプション（position）
+
+```
+┌────────────────────────────────────────┐
+│ top_left          top_right            │
+│    ◆                    ◆              │
+│                                        │
+│              center                    │
+│                 ◆                      │
+│                                        │
+│    ◆                    ◆              │
+│ bottom_left      bottom_right          │
+└────────────────────────────────────────┘
+
+tile: 画像全体にタイル状に繰り返し配置
+```
+
+---
+
+### Extract Hidden Watermark 🔍 ノード
+
+LSBステガノグラフィで埋め込まれたメッセージを抽出するノード。
+
+#### 入力ピン
+
+| ピン名 | 型 | 説明 |
+|--------|-----|------|
+| **image** | IMAGE | 抽出対象の画像 |
+
+#### パラメータ
+
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|-----------|------|
+| `max_length` | INT | 1000 | 読み取る最大文字数 |
+
+#### 出力ピン
+
+| ピン名 | 型 | 説明 |
+|--------|-----|------|
+| **hidden_message** | STRING | 抽出されたメッセージ |
+
+#### 使用例
+
+```
+[LoadImage] ──IMAGE──→ [Extract Hidden Watermark 🔍] ──STRING──→ [ShowText]
+```
+
+---
+
 ## 処理順序
 
 ```
