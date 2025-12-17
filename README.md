@@ -1,29 +1,33 @@
+[English] | [日本語](README.ja.md)
+
+---
+
 # ComfyUI Save Image with Watermark 💧
 
-透かし（ウォーターマーク）機能付き画像保存カスタムノード for ComfyUI
+Custom node for ComfyUI with watermarking capabilities
 
-## 🎨 この画像には秘密が隠されています
+## 🎨 This Image Has a Secret
 
-<img src="examples/aicuty_000011.png" width="400" alt="サンプル画像">
+<img src="examples/aicuty_000011.png" width="400" alt="Sample Image">
 
 ```mermaid
 graph TB
-    subgraph visible["👁️ 見える層"]
+    subgraph visible["👁️ Visible Layer"]
         direction LR
-        V1["🖼️ イラスト本体"]
-        V2["🅰️ ロゴ透かし<br/>(左下)"]
-        V3["📝 テキスト透かし<br/>(右下)"]
+        V1["🖼️ Main Image"]
+        V2["🅰️ Logo Watermark<br/>(bottom-left)"]
+        V3["📝 Text Watermark<br/>(bottom-right)"]
     end
 
-    subgraph invisible["🔒 見えない層 - LSBステガノグラフィ"]
+    subgraph invisible["🔒 Invisible Layer - LSB Steganography"]
         direction LR
-        I1["ピクセルRGB値"]
-        I2["最下位ビット<br/>に埋め込み"]
-        I3["🔐 隠しメッセージ"]
+        I1["Pixel RGB Values"]
+        I2["Embedded in<br/>Least Significant Bit"]
+        I3["🔐 Hidden Message"]
         I1 --> I2 --> I3
     end
 
-    IMG["📷 PNG画像ファイル"]
+    IMG["📷 PNG Image File"]
     IMG --> visible
     IMG --> invisible
 
@@ -32,106 +36,104 @@ graph TB
     style I3 fill:#ffebee,stroke:#e53935
 ```
 
-> 💡 **実際に試してみよう！**
+> 💡 **Try it yourself!**
 > ```bash
 > cd examples
 > python3 -m venv venv && source venv/bin/activate && pip install Pillow
 > python lsb_demo.py aicuty_000011.png
-> # → "invisible Hello World!" が抽出されます！
+> # → Extracts "invisible Hello World!"
 > ```
 
-## 機能
+## Features
 
-### 画像ロゴ透かし
-- **MASK対応**: LoadImageのMASK出力を使用した正確なアルファブレンディング
-- **透明PNG対応**: 黒浮き・白浮きなしの合成
-- **位置・スケール・透明度**: 細かく調整可能
+### Image Logo Watermark
+- **MASK Support**: Accurate alpha blending using LoadImage's MASK output
+- **Transparent PNG Support**: No black/white bleeding in compositing
+- **Position, Scale, Opacity**: Fine-grained control
 
-### テキスト透かし
-- **カスタムテキスト**: フォントサイズ、色、透明度、位置を指定可能
-- **動的テキスト**: 外部ノードからseed等を埋め込み可能
-- **タイル配置**: 画像全体に繰り返しパターンで配置
+### Text Watermark
+- **Custom Text**: Configurable font size, color, opacity, position
+- **Dynamic Text**: Embed seed values etc. from external nodes
+- **Tile Mode**: Repeat pattern across entire image
 
-### 不可視透かし（ステガノグラフィ）
-- **LSB埋め込み**: 画像の最下位ビットに隠しメッセージを埋め込み
-- **抽出ノード**: 埋め込まれた隠しメッセージを抽出
+### Invisible Watermark (Steganography)
+- **LSB Embedding**: Hide messages in the least significant bits
+- **Extraction Node**: Extract embedded hidden messages
 
-### メタデータ・来歴
-- **ワークフロー埋め込み**: ComfyUI Core互換のワークフロー保存
-- **コンテンツハッシュ**: SHA-256ハッシュを生成（ブロックチェーン来歴記録用）
-- **AICU独自メタデータ**: 透かし情報、タイムスタンプ等
+### Metadata & Provenance
+- **Workflow Embedding**: ComfyUI Core compatible workflow saving
+- **Content Hash**: Generate SHA-256 hash for blockchain provenance
+- **AICU Metadata**: Watermark info, timestamps, etc.
 
-### 保存オプション
-- **output_folder**: ComfyUIのoutputフォルダに保存
-- **browser_download**: ブラウザでダウンロード
-- **both**: 両方（デフォルト）
+### Save Options
+- **output_folder**: Save to ComfyUI output folder
+- **browser_download**: Download via browser
+- **both**: Both (default)
 
-## インストール
+## Installation
 
-### ComfyUI Manager経由（推奨）
+### Via ComfyUI Manager (Recommended)
 
-1. ComfyUIを起動
-2. **Manager** ボタンをクリック
-3. **Install Custom Nodes** を選択
-4. 検索ボックスに `watermark` または `aicu` と入力
-5. **comfyui-save-image-watermark** を見つけて **Install** をクリック
-6. ComfyUIを再起動
+1. Launch ComfyUI
+2. Click **Manager** button
+3. Select **Install Custom Nodes**
+4. Search for `watermark` or `aicu`
+5. Find **comfyui-save-image-watermark** and click **Install**
+6. Restart ComfyUI
 
-<img src="examples/ss-manager-search.png" width="500" alt="ComfyUI Manager検索画面">
+<img src="examples/ss-manager-search.png" width="500" alt="ComfyUI Manager Search">
 
-### Comfy Registry経由
+### Via Comfy Registry
 
 ```bash
 comfy node registry-install comfyui-save-image-watermark
 ```
 
-### 手動インストール
+### Manual Installation
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 ```
 
-### 依存関係
+### Dependencies
 
-このノードはComfyUIの標準ライブラリのみを使用するため、追加の依存関係はありません。
+This node uses only ComfyUI's standard libraries, no additional dependencies required.
 
-- Pillow（ComfyUIに同梱）
-- NumPy（ComfyUIに同梱）
-- PyTorch（ComfyUIに同梱）
+- Pillow (bundled with ComfyUI)
+- NumPy (bundled with ComfyUI)
+- PyTorch (bundled with ComfyUI)
 
-## ノード一覧
+## Node List
 
 ### Save Image (Watermark) 💧
-カテゴリ: `AICU/Save`
+Category: `AICU/Save`
 
-透かし付きで画像を保存するメインノード。
+Main node for saving images with watermarks.
 
 ### Extract Hidden Watermark 🔍
-カテゴリ: `AICU/Watermark`
+Category: `AICU/Watermark`
 
-不可視透かし（ステガノグラフィ）を抽出するノード。
+Node for extracting invisible watermarks (steganography).
 
 ---
 
-## ComfyUIでの使い方
+## How to Use in ComfyUI
 
-### ノードの追加方法
+### Adding the Node
 
-1. キャンバス上で右クリック → **Add Node**
-2. **AICU** → **Save** → **Save Image (Watermark) 💧** を選択
+1. Right-click on canvas → **Add Node**
+2. Select **AICU** → **Save** → **Save Image (Watermark) 💧**
 
-<!-- ノード追加メニューのスクリーンショットは省略 -->
+### Node Wiring Diagram
 
-### ノード配線図
-
-<img src="examples/ss-workflow-overview.png" width="800" alt="ワークフロー全体像">
+<img src="examples/ss-workflow-overview.png" width="800" alt="Workflow Overview">
 
 ```mermaid
 flowchart LR
-    subgraph input["入力"]
+    subgraph input["Input"]
         KS[KSampler] --> VAE[VAEDecode]
-        LI[LoadImage<br/>ロゴ画像]
+        LI[LoadImage<br/>Logo Image]
     end
 
     subgraph main["Save Image (Watermark) 💧"]
@@ -146,9 +148,9 @@ flowchart LR
         O3[\"content_hash (STRING)"\]
     end
 
-    subgraph output["出力"]
+    subgraph output["Output"]
         PREVIEW[PreviewImage]
-        NEXT[次のノード...]
+        NEXT[Next Node...]
     end
 
     VAE -->|IMAGE| I1
@@ -159,137 +161,113 @@ flowchart LR
     O1 --> NEXT
 ```
 
-### 基本的な接続
+### Basic Connections
 
-#### Step 1: 元画像を接続
+#### Step 1: Connect Source Image
 
-生成した画像を `images` ピンに接続します。
+Connect your generated image to the `images` pin.
 
 ```
 [KSampler] → [VAEDecode] → images
 ```
 
-<img src="examples/ss-connect-vaedecode.png" width="400" alt="VAEDecode接続">
+<img src="examples/ss-connect-vaedecode.png" width="400" alt="VAEDecode Connection">
 
-#### Step 2: ロゴ画像を接続（オプション）
+#### Step 2: Connect Logo Image (Optional)
 
-透かしロゴを追加する場合、LoadImageノードから2本のワイヤーを接続します。
+To add a logo watermark, connect two wires from LoadImage node.
 
 ```
 [LoadImage]
     ├─ IMAGE → watermark_image
-    └─ MASK  → watermark_image_mask  ← 重要！透明度情報
+    └─ MASK  → watermark_image_mask  ← Important! Alpha info
 ```
 
-> ⚠️ **MASK接続を忘れずに！** MASKを接続しないと透明部分が黒くなります。
+> ⚠️ **Don't forget MASK!** Without MASK, transparent areas will appear black.
 
-<img src="examples/ss-connect-loadimage.png" width="500" alt="LoadImage接続">
+<img src="examples/ss-connect-loadimage.png" width="500" alt="LoadImage Connection">
 
-#### Step 3: パラメータを設定
+#### Step 3: Configure Parameters
 
-ノードのウィジェットで各種設定を調整します。
+Adjust settings using the node's widgets.
 
-<img src="examples/s-parameters.png" width="400" alt="パラメータ設定">
+<img src="examples/s-parameters.png" width="400" alt="Parameter Settings">
 
-### 入力ピン（左側）
+### Input Pins (Left Side)
 
-| ピン名 | 型 | 必須 | 説明 |
-|--------|-----|------|------|
-| **images** | IMAGE | ✅ | 透かしを入れる元画像。VAEDecodeの出力を接続 |
-| **watermark_image** | IMAGE | - | ロゴ画像。LoadImageのIMAGE出力を接続 |
-| **watermark_image_mask** | MASK | - | ロゴのアルファ情報。LoadImageのMASK出力を接続 |
-| **dynamic_text** | STRING | - | 動的テキスト。seed値などを接続可能 |
+| Pin Name | Type | Required | Description |
+|----------|------|----------|-------------|
+| **images** | IMAGE | ✅ | Source image. Connect VAEDecode output |
+| **watermark_image** | IMAGE | - | Logo image. Connect LoadImage IMAGE output |
+| **watermark_image_mask** | MASK | - | Logo alpha. Connect LoadImage MASK output |
+| **dynamic_text** | STRING | - | Dynamic text. Can connect seed values etc. |
 
-### 出力ピン（右側）
+### Output Pins (Right Side)
 
-| ピン名 | 型 | 説明 |
-|--------|-----|------|
-| **image** | IMAGE | 透かし処理後の画像。後続ノードに接続可能 |
-| **filename** | STRING | 保存されたファイル名 |
-| **content_hash** | STRING | SHA-256ハッシュ（来歴記録用） |
+| Pin Name | Type | Description |
+|----------|------|-------------|
+| **image** | IMAGE | Processed image. Can connect to subsequent nodes |
+| **filename** | STRING | Saved filename |
+| **content_hash** | STRING | SHA-256 hash (for provenance) |
 
 ---
 
-### パラメータ詳細
+### Parameter Details
 
-#### 基本設定
+#### Basic Settings
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `filename_prefix` | STRING | "aicuty" | ファイル名の接頭辞。`aicuty_00001_.png` のように連番が付く |
-| `file_format` | ENUM | PNG | 保存形式。**PNG推奨**（LSBが保持される） |
-| `save_to` | ENUM | both | 保存先。`output_folder` / `browser_download` / `both` |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `filename_prefix` | STRING | "aicuty" | Filename prefix. Numbered like `aicuty_00001_.png` |
+| `file_format` | ENUM | PNG | Save format. **PNG recommended** (preserves LSB) |
+| `save_to` | ENUM | both | Destination. `output_folder` / `browser_download` / `both` |
 
-#### 画像ロゴ透かし
+#### Image Logo Watermark
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  LoadImage (ロゴ)                                       │
-│  ┌─────────┐                                           │
-│  │ 🖼️ LOGO │──IMAGE──→ watermark_image                 │
-│  │   .png  │──MASK───→ watermark_image_mask            │
-│  └─────────┘           ↑                               │
-│                        │                               │
-│          LoadImageのMASK出力は透明部分=白、不透明=黒    │
-│          ノード内部で自動反転されます                   │
-└─────────────────────────────────────────────────────────┘
-```
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `watermark_image_position` | ENUM | bottom_left | Logo position |
+| `watermark_image_scale` | FLOAT | 0.15 | Logo ratio to image width (1%-100%) |
+| `watermark_image_opacity` | FLOAT | 1.0 | Opacity (0.0=transparent, 1.0=opaque) |
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `watermark_image_position` | ENUM | bottom_left | ロゴの配置位置 |
-| `watermark_image_scale` | FLOAT | 0.15 | 画像幅に対するロゴの比率（1%〜100%） |
-| `watermark_image_opacity` | FLOAT | 1.0 | 不透明度（0.0=透明、1.0=不透明） |
+#### Text Watermark
 
-#### テキスト透かし
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `watermark_text` | STRING | "© AICU" | Watermark text |
+| `watermark_text_enabled` | BOOL | True | Enable/disable text watermark |
+| `watermark_text_position` | ENUM | bottom_right | Text position |
+| `watermark_text_opacity` | FLOAT | 0.9 | Opacity |
+| `watermark_text_size` | INT | 24 | Font size (8-128px) |
+| `watermark_text_color` | STRING | #FFFFFF | Text color (HEX format) |
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `watermark_text` | STRING | "© AICU" | 透かしテキスト |
-| `watermark_text_enabled` | BOOL | True | テキスト透かしの有効/無効 |
-| `watermark_text_position` | ENUM | bottom_right | テキストの配置位置 |
-| `watermark_text_opacity` | FLOAT | 0.9 | 不透明度 |
-| `watermark_text_size` | INT | 24 | フォントサイズ（8〜128px） |
-| `watermark_text_color` | STRING | #FFFFFF | テキスト色（HEX形式） |
+#### Invisible Watermark (LSB)
 
-**動的テキストの使い方:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `invisible_watermark` | STRING | "" | Secret message to embed |
+| `invisible_watermark_enabled` | BOOL | False | Enable/disable invisible watermark |
 
-```
-┌──────────────┐
-│ PrimitiveNode│
-│ "/seed: 123" │──STRING──→ dynamic_text
-└──────────────┘
+> ⚠️ **Note**: Invisible watermarks are preserved **only in PNG format**. JPEG/WebP will destroy them.
 
-結果: "© AICU/seed: 123"（watermark_textと連結される）
-```
+#### Metadata
 
-#### 不可視透かし（LSB）
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `embed_workflow` | BOOL | True | Embed ComfyUI workflow |
+| `embed_metadata` | BOOL | True | Embed AICU metadata |
+| `metadata_json` | STRING | "{}" | Custom JSON metadata |
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `invisible_watermark` | STRING | "" | 埋め込む秘密メッセージ |
-| `invisible_watermark_enabled` | BOOL | False | 不可視透かしの有効/無効 |
+#### Quality Settings
 
-> ⚠️ **注意**: 不可視透かしは**PNG形式のみ**で保持されます。JPEG/WebPでは破壊されます。
-
-#### メタデータ
-
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `embed_workflow` | BOOL | True | ComfyUIワークフローを埋め込み |
-| `embed_metadata` | BOOL | True | AICUメタデータを埋め込み |
-| `metadata_json` | STRING | "{}" | カスタムJSONメタデータ |
-
-#### 品質設定
-
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `jpeg_quality` | INT | 95 | JPEG品質（1〜100） |
-| `webp_quality` | INT | 90 | WebP品質（1〜100） |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `jpeg_quality` | INT | 95 | JPEG quality (1-100) |
+| `webp_quality` | INT | 90 | WebP quality (1-100) |
 
 ---
 
-### 位置オプション（position）
+### Position Options
 
 ```
 ┌────────────────────────────────────────┐
@@ -303,191 +281,92 @@ flowchart LR
 │ bottom_left      bottom_right          │
 └────────────────────────────────────────┘
 
-tile: 画像全体にタイル状に繰り返し配置
+tile: Repeat pattern across entire image
 ```
 
 ---
 
-### Extract Hidden Watermark 🔍 ノード
+### Extract Hidden Watermark 🔍 Node
 
-LSBステガノグラフィで埋め込まれたメッセージを抽出するノード。
+Node for extracting LSB steganography messages.
 
-<img src="examples/ss-extract-node.png" width="300" alt="Extract Hidden Watermarkノード">
+<img src="examples/ss-extract-node.png" width="300" alt="Extract Hidden Watermark Node">
 
-#### 入力ピン
+#### Input Pins
 
-| ピン名 | 型 | 説明 |
-|--------|-----|------|
-| **image** | IMAGE | 抽出対象の画像 |
+| Pin Name | Type | Description |
+|----------|------|-------------|
+| **image** | IMAGE | Image to extract from |
 
-#### パラメータ
+#### Parameters
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|-----|-----------|------|
-| `max_length` | INT | 1000 | 読み取る最大文字数 |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `max_length` | INT | 1000 | Maximum characters to read |
 
-#### 出力ピン
+#### Output Pins
 
-| ピン名 | 型 | 説明 |
-|--------|-----|------|
-| **hidden_message** | STRING | 抽出されたメッセージ |
+| Pin Name | Type | Description |
+|----------|------|-------------|
+| **hidden_message** | STRING | Extracted message |
 
-#### 使用例
+#### Usage Example
 
 ```
 [LoadImage] ──IMAGE──→ [Extract Hidden Watermark 🔍] ──STRING──→ [ShowText]
 ```
 
-<img src="examples/ss-extract-workflow.png" width="600" alt="抽出ワークフロー例">
+<img src="examples/ss-extract-workflow.png" width="600" alt="Extraction Workflow Example">
 
 ---
 
-## 処理順序
+## Processing Order
 
 ```
-1. 画像ロゴ透かし（最下層）
-   └─ MASK領域のみopacityでブレンド
+1. Image Logo Watermark (bottom layer)
+   └─ Blend only in MASK areas with opacity
 
-2. テキスト透かし（ロゴの上）
-   └─ 動的テキストと結合
+2. Text Watermark (above logo)
+   └─ Combined with dynamic text
 
-3. 不可視透かし（最後）
-   └─ LSBステガノグラフィ
+3. Invisible Watermark (last)
+   └─ LSB Steganography
 
-4. ファイル保存
+4. File Save
 ```
 
-## パラメータ
+---
 
-### 基本設定
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| images | 入力画像 (IMAGE) | 必須 |
-| filename_prefix | ファイル名プレフィックス | "aicuty" |
-| file_format | PNG / JPEG / WEBP | PNG |
-| save_to | output_folder / browser_download / both | both |
+## Technical Specifications
 
-### 画像ロゴ透かし
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| watermark_image | ロゴ画像 (IMAGE) | - |
-| watermark_image_mask | アルファマスク (MASK) | - |
-| watermark_image_position | 位置 | bottom_left |
-| watermark_image_scale | スケール (0.01-1.0) | 0.15 |
-| watermark_image_opacity | 透明度 (0.0-1.0) | 1.0 |
+### Image Logo Blending
+- MASK=0: Fully transparent (no blending)
+- MASK=255: Blend with opacity value
+- Formula: `result = base * (1 - mask * opacity) + logo * (mask * opacity)`
 
-### テキスト透かし
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| watermark_text | 透かしテキスト | "© AICU" |
-| watermark_text_enabled | 有効/無効 | True |
-| watermark_text_position | 位置 | bottom_right |
-| watermark_text_opacity | 透明度 | 0.9 |
-| watermark_text_size | フォントサイズ | 24 |
-| watermark_text_color | 色（HEX） | #FFFFFF |
-| dynamic_text | 動的テキスト入力 | - |
+### Invisible Watermark (LSB)
 
-### 不可視透かし
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| invisible_watermark | 隠しメッセージ | "" |
-| invisible_watermark_enabled | 有効/無効 | False |
+This implementation uses **simple LSB (Least Significant Bit) method**.
 
-### メタデータ
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| embed_workflow | ワークフロー埋め込み | True |
-| embed_metadata | AICU メタデータ埋め込み | True |
-| metadata_json | カスタムJSON | "{}" |
-
-### 品質設定
-| パラメータ | 説明 | デフォルト |
-|-----------|------|-----------|
-| jpeg_quality | JPEG品質 | 95 |
-| webp_quality | WebP品質 | 90 |
-
-### 位置オプション
-- `bottom_right`: 右下
-- `bottom_left`: 左下
-- `top_right`: 右上
-- `top_left`: 左上
-- `center`: 中央
-- `tile`: タイル状に繰り返し
-
-## 使用例
-
-### 基本的な使い方
-```
-[VAEDecode] → [Save Image (Watermark) 💧]
-                    ↑
-[LoadImage] → IMAGE + MASK
-```
-
-### 画像ロゴ + テキストの配置
-```
-LoadImage (ロゴ)
-    ├─ IMAGE → watermark_image
-    └─ MASK  → watermark_image_mask
-
-設定:
-- watermark_image_position: bottom_left (ロゴは左下)
-- watermark_text_position: bottom_right (テキストは右下)
-```
-
-### 動的テキスト（seed表示）
-```
-[String] "/seed: 12345" → dynamic_text
-
-結果: "© AICU/seed: 12345"
-```
-※ watermark_text と dynamic_text は区切り文字なしで連結されます
-
-### 不可視透かしの埋め込みと抽出
-```
-埋め込み:
-invisible_watermark = "secret message"
-invisible_watermark_enabled = True
-
-抽出:
-[LoadImage] → [Extract Hidden Watermark 🔍] → hidden_message
-```
-
-## 出力
-
-- **image**: 処理後の画像 (IMAGE) - 後続ノードへの接続用
-- **filename**: 保存されたファイル名
-- **content_hash**: SHA-256ハッシュ値（来歴記録用）
-
-## 技術仕様
-
-### 画像ロゴブレンディング
-- MASKが0の部分: 完全透明（ブレンドしない）
-- MASKが255の部分: opacity値でブレンド
-- 計算式: `result = base * (1 - mask * opacity) + logo * (mask * opacity)`
-
-### 不可視透かし（LSB）
-
-現在の実装は**シンプルLSB（Least Significant Bit）方式**を採用しています。
-
-#### LSBとは？
+#### What is LSB?
 
 ```mermaid
 graph LR
-    subgraph pixel["1ピクセルの構造"]
+    subgraph pixel["1 Pixel Structure"]
         R["R: 10000000<br/>(128)"]
         G["G: 10000000<br/>(128)"]
         B["B: 10000000<br/>(128)"]
     end
 
-    subgraph lsb["最下位ビット (LSB)"]
+    subgraph lsb["Least Significant Bit (LSB)"]
         R --> R_LSB["0"]
         G --> G_LSB["0"]
         B --> B_LSB["0"]
     end
 
-    R_LSB --> MSG["メッセージの<br/>1ビット目"]
-    G_LSB --> MSG2["メッセージの<br/>2ビット目"]
-    B_LSB --> MSG3["メッセージの<br/>3ビット目"]
+    R_LSB --> MSG["Message<br/>bit 1"]
+    G_LSB --> MSG2["Message<br/>bit 2"]
+    B_LSB --> MSG3["Message<br/>bit 3"]
 
     style R fill:#ffcdd2
     style G fill:#c8e6c9
@@ -495,212 +374,173 @@ graph LR
 ```
 
 ```
-例: "H" (ASCII 72 = 01001000) を埋め込む
+Example: Embedding "H" (ASCII 72 = 01001000)
 
-元のピクセル        埋め込み後          変化
+Original Pixel      After Embedding     Change
 ─────────────────────────────────────────────
 Pixel[0]
   R: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
-  G: 128 (10000000) → 129 (1000000[1])   LSB=1 ← 変更！
+  G: 128 (10000000) → 129 (1000000[1])   LSB=1 ← Changed!
   B: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
 
-Pixel[1]
-  R: 128 (10000000) → 128 (1000000[0])   LSB=0 ✓
-  G: 128 (10000000) → 129 (1000000[1])   LSB=1 ← 変更！
-  ...
-
-128 → 129 の変化は人間の目には見えない！
+The 128 → 129 change is invisible to human eyes!
 ```
 
-> 💡 **実際に試す**: `python examples/lsb_demo.py --create-gray`
+> 💡 **Try it**: `python examples/lsb_demo.py --create-gray`
 
-#### アルゴリズム
+#### Algorithm
 
-**埋め込み処理:**
-1. メッセージをUTF-8でバイト列に変換
-2. 終端マーカー（4つのNULLバイト `\x00\x00\x00\x00`）を追加
-3. 各バイトを8ビットに分解
-4. 画像の各ピクセルのR, G, B値の最下位ビット（LSB）を順番に書き換え
-5. アルファチャンネル（透明度）は変更しない
+**Embedding Process:**
+1. Convert message to UTF-8 byte sequence
+2. Add termination marker (4 NULL bytes `\x00\x00\x00\x00`)
+3. Split each byte into 8 bits
+4. Overwrite LSB of each pixel's R, G, B values sequentially
+5. Alpha channel (transparency) is not modified
 
-**抽出処理:**
-1. 画像の各ピクセルのR, G, B値からLSBを順番に取得
-2. 8ビットずつ集めてバイトに復元
-3. 終端マーカー（4つの連続NULLバイト）を検出したら終了
-4. バイト列をUTF-8でデコードしてメッセージを復元
+**Extraction Process:**
+1. Get LSB from each pixel's R, G, B values sequentially
+2. Collect 8 bits to reconstruct bytes
+3. Stop when termination marker (4 consecutive NULL bytes) is detected
+4. Decode byte sequence as UTF-8 to recover message
 
-#### 仕様
-- 最大埋め込み容量: `(width × height × 3) / 8` バイト
-- 終端マーカー: 4バイト（`\x00\x00\x00\x00`）
-- エンコーディング: UTF-8
+#### Specifications
+- Maximum capacity: `(width × height × 3) / 8` bytes
+- Termination marker: 4 bytes (`\x00\x00\x00\x00`)
+- Encoding: UTF-8
 
-#### ⚠️ 重要な制限事項
+#### ⚠️ Important Limitations
 
-**この方式は画像加工に対して脆弱です。以下の操作でデータが破壊されます:**
+**This method is vulnerable to image processing. The following operations will destroy data:**
 
-| 操作 | 影響 |
-|-----|------|
-| JPEG保存 | ❌ 完全に破壊（非可逆圧縮がLSBを変更） |
-| WebP保存（非可逆） | ❌ 完全に破壊 |
-| リサイズ | ❌ 完全に破壊（ピクセル補間でLSBが変更） |
-| クロップ | ❌ 完全に破壊（ピクセル位置がずれる） |
-| 回転 | ❌ 完全に破壊 |
-| 色調補正 | ❌ 完全に破壊 |
-| PNG再保存 | ✅ 保持される（可逆圧縮のため） |
+| Operation | Effect |
+|-----------|--------|
+| JPEG save | ❌ Completely destroyed (lossy compression changes LSB) |
+| WebP save (lossy) | ❌ Completely destroyed |
+| Resize | ❌ Completely destroyed (pixel interpolation changes LSB) |
+| Crop | ❌ Completely destroyed (pixel positions shift) |
+| Rotation | ❌ Completely destroyed |
+| Color adjustment | ❌ Completely destroyed |
+| PNG re-save | ✅ Preserved (lossless compression) |
 
-**推奨事項:**
-- 不可視透かしを使用する場合は**PNG形式のみ**で保存してください
-- 抽出前に画像を加工しないでください
-- 耐久性が必要な場合は、将来実装予定のDCT/DWT方式をお待ちください
+**Recommendations:**
+- Use **PNG format only** when using invisible watermarks
+- Do not process the image before extraction
+- For robustness, wait for future DCT/DWT implementation
 
-#### セキュリティ上の注意
-- 現在の実装には**暗号化機能がありません**
-- 埋め込み位置は**固定パターン**（左上から順番）
-- 第三者が同じアルゴリズムで抽出可能です
-- 機密情報の埋め込みには適しません
+#### Security Notice
+- Current implementation has **no encryption**
+- Embedding position is **fixed pattern** (sequential from top-left)
+- Third parties can extract using the same algorithm
+- Not suitable for embedding confidential information
 
-### コンテンツハッシュ
-- アルゴリズム: SHA-256
-- 入力: PNG形式でエンコードされた画像バイト列
-- 出力: 64文字の16進数文字列
+### Content Hash
+- Algorithm: SHA-256
+- Input: Image byte sequence encoded as PNG
+- Output: 64-character hexadecimal string
 
 ---
 
-## 実験: Photoshopで加工してもLSBは生き残るか？
+## Experiment: Does LSB Survive Photoshop Editing?
 
-LSBステガノグラフィは「画像加工に弱い」と言われますが、実際にPhotoshopで編集した場合どうなるのか実験してみました。
+LSB steganography is said to be "vulnerable to image processing", but what actually happens when editing with Photoshop?
 
-### 実験環境
+### Test Environment
 
 - Adobe Photoshop 2026
 - macOS
-- 元画像: 128x128 グレー画像（LSBに "Hello LSB!" を埋め込み済み）
+- Source: 128x128 gray image (with "Hello LSB!" embedded via LSB)
 
-### 実験手順
+### Procedure
 
-1. LSB埋め込み済みの画像をPhotoshopで開く
-2. テキストツールで文字を追加
-3. **「PNGとしてクイック書き出し」** で保存
+1. Open LSB-embedded image in Photoshop
+2. Add text using text tool
+3. Save with **"Quick Export as PNG"**
 
-<img src="examples/screenshot-photoshop.png" width="600" alt="Photoshopでの書き出し手順">
+<img src="examples/screenshot-photoshop.png" width="600" alt="Photoshop Export Steps">
 
-### 結果
+### Results
 
 ```
-【ピクセル分析】
-   最初の変更ピクセル: 行13, 列43（テキスト部分のみ）
-   変更されたピクセル: 9.2%（テキスト領域のみ）
+【Pixel Analysis】
+   First changed pixel: Row 13, Column 43 (text area only)
+   Changed pixels: 9.2% (text area only)
 
-【LSBメッセージ領域】
-   位置: 行0, 列0〜37（最初の38ピクセル）
-   状態: 完全に無傷 ✅
+【LSB Message Area】
+   Location: Row 0, Columns 0-37 (first 38 pixels)
+   Status: Completely intact ✅
 
-【抽出テスト】
-   元画像:           'Hello LSB!'
-   Photoshop加工後:  'Hello LSB!'
+【Extraction Test】
+   Original:        'Hello LSB!'
+   After Photoshop: 'Hello LSB!'
 
-   🎉 復号成功！
+   🎉 Decoding successful!
 ```
 
-### なぜ成功したのか
+### Why It Survived
 
-| 要因 | 説明 |
-|------|------|
-| **書き出し方式** | 「PNGとしてクイック書き出し」は最適化が最小限 |
-| **カラープロファイル** | 変換なし（埋め込みプロファイルを維持） |
-| **加工位置** | テキストが中央、LSBデータは左上 → 重ならない |
-| **ファイル形式** | PNG（可逆圧縮）で保存 |
+| Factor | Explanation |
+|--------|-------------|
+| **Export method** | "Quick Export as PNG" has minimal optimization |
+| **Color profile** | No conversion (embedded profile maintained) |
+| **Edit location** | Text in center, LSB data in top-left → no overlap |
+| **File format** | Saved as PNG (lossless) |
 
-### 生存条件まとめ
+### Survival Conditions
 
 ```mermaid
 flowchart TD
-    A[Photoshopで編集] --> B{カラープロファイル変換?}
-    B -->|あり| X[❌ 破壊]
-    B -->|なし| C{保存形式?}
+    A[Edit in Photoshop] --> B{Color profile conversion?}
+    B -->|Yes| X[❌ Destroyed]
+    B -->|No| C{Save format?}
     C -->|JPEG/WebP| X
-    C -->|PNG| D{加工位置?}
-    D -->|左上を編集| X
-    D -->|中央/右下を編集| E[✅ 生存]
+    C -->|PNG| D{Edit location?}
+    D -->|Top-left edited| X
+    D -->|Center/bottom-right| E[✅ Survives]
 ```
 
-### 破壊されるケース
+### Conclusion
 
-以下の操作を行うと確実に破壊されます：
+> LSB steganography is more durable than expected... but don't trust it
 
-- ❌ 「Web用に保存（従来）」→ 最適化でピクセル値が変わる
-- ❌ 「書き出し形式」でJPEG選択
-- ❌ カラープロファイルを変換（sRGB → Adobe RGB など）
-- ❌ 画像サイズを変更（リサイズ）
-- ❌ 左上領域にテキストやスタンプを追加
-
-### 実験用スクリプト
-
-自分で試してみたい場合は、以下のコマンドを実行してください：
-
-```bash
-cd examples
-
-# Python環境のセットアップ
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install Pillow
-
-# グレー画像でLSB実験
-python lsb_demo.py --create-gray
-
-# 生成されたファイル
-# - gray128_128x128.png        (元のグレー画像)
-# - gray128_with_secret.png    (LSB埋め込み済み)
-
-# Photoshopで gray128_with_secret.png を開いて加工し、
-# 別名で保存してから抽出テスト
-python lsb_demo.py your_edited_image.png
-```
-
-### 結論
-
-> LSBステガノグラフィは思ったより丈夫...だが、信頼してはいけない
-
-「PNG再保存なら大丈夫」という単純な話ではなく、**どこを編集したか**が重要です。
-ただし、これはセキュリティ機能ではなく、あくまで**実験的な透かし**として使用してください。
+It's not simply "PNG re-save is OK" - **where you edit** matters.
+However, this is not a security feature - use only as an **experimental watermark**.
 
 ---
 
-## 将来の拡張予定
+## Future Plans
 
-### テキスト装飾
-- カスタムフォント対応
-- 縁取り（ストローク）
-- ドロップシャドウ
-- テキスト回転
-- 背景ボックス
+### Text Decoration
+- Custom font support
+- Stroke (outline)
+- Drop shadow
+- Text rotation
+- Background box
 
-### 高度なステガノグラフィ
-- DCT (Discrete Cosine Transform) 方式
-- DWT (Discrete Wavelet Transform) 方式
-- 暗号化キーによる位置シャッフル
-- エラー訂正符号
+### Advanced Steganography
+- DCT (Discrete Cosine Transform) method
+- DWT (Discrete Wavelet Transform) method
+- Position shuffling with encryption key
+- Error correction codes
 
-### その他
-- ロゴ回転・ブレンドモード
-- C2PA署名対応
+### Other
+- Logo rotation & blend modes
+- C2PA signature support
 
-## ライセンス
+## License
 
 Apache License 2.0
 
-## 関連プロジェクト
+## Related Projects
 
 - [ComfyUI Master Guide](https://j.aicu.ai/comfysb)
-- [comfyui-save-image-local](https://github.com/yhayano-ponotech/comfyui-save-image-local) - オリジナルの保存ノード
-- [C2PA](https://c2pa.org/) - Content Credentials標準
+- [comfyui-save-image-local](https://github.com/yhayano-ponotech/comfyui-save-image-local) - Original save node
+- [C2PA](https://c2pa.org/) - Content Credentials standard
 
-## 貢献
+## Contributing
 
-Issue、Pull Requestを歓迎します。
+Issues and Pull Requests are welcome.
 
-## 作者
+## Author
 
 AICU Japan K. K.
 - Web: https://aicu.jp
