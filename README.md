@@ -77,7 +77,7 @@ graph TB
 5. **comfyui-save-image-watermark** を見つけて **Install** をクリック
 6. ComfyUIを再起動
 
-**★ここにスクリーンショットを入れる（ComfyUI Manager検索画面）**
+<img src="examples/ss-manager-search.png" width="500" alt="ComfyUI Manager検索画面">
 
 ### Comfy Registry経由
 
@@ -121,11 +121,11 @@ git clone https://github.com/aicuai/comfyui-save-image-watermark.git
 1. キャンバス上で右クリック → **Add Node**
 2. **AICU** → **Save** → **Save Image (Watermark) 💧** を選択
 
-**★ここにスクリーンショットを入れる（ノード追加メニュー）**
+<!-- ノード追加メニューのスクリーンショットは省略 -->
 
 ### ノード配線図
 
-**★ここにスクリーンショットを入れる（実際のワークフロー全体像）**
+<img src="examples/ss-workflow-overview.png" width="800" alt="ワークフロー全体像">
 
 ```mermaid
 flowchart LR
@@ -169,7 +169,7 @@ flowchart LR
 [KSampler] → [VAEDecode] → images
 ```
 
-**★ここにスクリーンショットを入れる（VAEDecode→imagesの接続）**
+<img src="examples/ss-connect-vaedecode.png" width="400" alt="VAEDecode接続">
 
 #### Step 2: ロゴ画像を接続（オプション）
 
@@ -183,13 +183,13 @@ flowchart LR
 
 > ⚠️ **MASK接続を忘れずに！** MASKを接続しないと透明部分が黒くなります。
 
-**★ここにスクリーンショットを入れる（LoadImageからの2本接続）**
+<img src="examples/ss-connect-loadimage.png" width="500" alt="LoadImage接続">
 
 #### Step 3: パラメータを設定
 
 ノードのウィジェットで各種設定を調整します。
 
-**★ここにスクリーンショットを入れる（パラメータ設定画面）**
+<img src="examples/s-parameters.png" width="400" alt="パラメータ設定">
 
 ### 入力ピン（左側）
 
@@ -312,7 +312,7 @@ tile: 画像全体にタイル状に繰り返し配置
 
 LSBステガノグラフィで埋め込まれたメッセージを抽出するノード。
 
-**★ここにスクリーンショットを入れる（Extract Hidden Watermarkノード）**
+<img src="examples/ss-extract-node.png" width="300" alt="Extract Hidden Watermarkノード">
 
 #### 入力ピン
 
@@ -338,7 +338,7 @@ LSBステガノグラフィで埋め込まれたメッセージを抽出する�
 [LoadImage] ──IMAGE──→ [Extract Hidden Watermark 🔍] ──STRING──→ [ShowText]
 ```
 
-**★ここにスクリーンショットを入れる（抽出ワークフロー例）**
+<img src="examples/ss-extract-workflow.png" width="600" alt="抽出ワークフロー例">
 
 ---
 
