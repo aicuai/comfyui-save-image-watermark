@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-save-image-watermark"
 description = "Save images with visible watermarks (logo/text), invisible watermarks (LSB steganography), and metadata embedding. Supports PNG/JPEG/WebP with browser download."
-version = "1.1.0"
+version = "1.1.1"
 license = {file = "LICENSE"}
 dependencies = []
 keywords = ["comfyui", "watermark", "steganography", "lsb", "image", "save"]
